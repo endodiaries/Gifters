@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gifters — Secret Santa Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --border: #2a2a3a;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-dim: #8a6e2f;
+      --text: #e8e4dc;
+      --text-muted: #7a7888;
+      --text-dim: #4a4858;
+      --red: #c05050;
+      --green: #4a9060;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -30%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .logo-icon {
+      font-size: 2.4rem;
+      margin-bottom: 16px;
+      display: block;
+      filter: drop-shadow(0 0 24px rgba(201,168,76,0.4));
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 5vw, 3rem);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    h1 span {
+      color: var(--gold);
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Section */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--gold);
+      margin-bottom: 6px;
+      letter-spacing: 0.03em;
+    }
+
+    .section-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    /* Add participant form */
+    .add-form {
+      display: grid;
+      grid-template-columns: 1fr 140px 100px auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 560px) {
+      .add-form {
+        grid-template-columns: 1fr 1fr;
+      }
+      .add-form .btn-add {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="password"],
+    select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 300;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+      -webkit-appearance: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="password"]:focus,
+    select:focus {
+      border-color: var(--gold-dim);
+    }
+
+    input::placeholder { color: var(--text-dim); }
+
+    /* Buttons */
+    .btn {
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      padding: 10px 18px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-add {
+      background: var(--gold-dim);
+      color: #0d0d0f;
+      align-self: end;
+    }
+    .btn-add:hover { background: var(--gold); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: #0d0d0f;
+      padding: 14px 32px;
+      font-size: 0.88rem;
+      border-radius: 10px;
+      width: 100%;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(201,168,76,0.25);
+    }
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-danger {
+      background: transparent;
+      border: 1px solid #3a2020;
+      color: var(--red);
+      padding: 6px 10px;
+      font-size: 0.75rem;
+    }
+    .btn-danger:hover { background: #2a1010; border-color: var(--red); }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 16px;
+    }
+    .btn-outline:hover { border-color: var(--text-muted); color: var(--text); }
+
+    /* Participant list */
+    .participant-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .participant-item {
+      display: grid;
+      grid-template-columns: 32px 1fr auto auto;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      transition: border-color 0.2s;
+    }
+
+    .participant-item:hover { border-color: #3a3a4a; }
+
+    .p-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      color: var(--gold-dim);
+      text-align: center;
+    }
+
+    .p-info { min-width: 0; }
+
+    .p-name {
+      font-size: 0.92rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .p-pin {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-family: monospace;
+      letter-spacing: 0.1em;
+    }
+
+    .p-couple-badge {
+      font-size: 0.7rem;
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.25);
+      color: var(--gold-dim);
+      padding: 3px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* Couple section */
+    .couple-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    @media (max-width: 480px) {
+      .couple-form { grid-template-columns: 1fr 1fr; }
+      .couple-form .btn-add { grid-column: 1 / -1; }
+    }
+
+    .couple-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 16px;
+    }
+
+    .couple-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+    }
+
+    .couple-names {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .couple-heart { color: var(--gold-dim); font-size: 0.8rem; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+    }
+
+    /* Alert */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+      line-height: 1.5;
+    }
+    .alert.show { display: block; }
+    .alert-error { background: rgba(192,80,80,0.1); border: 1px solid rgba(192,80,80,0.3); color: #e08080; }
+    .alert-success { background: rgba(74,144,96,0.1); border: 1px solid rgba(74,144,96,0.3); color: #80c898; }
+    .alert-info { background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2); color: var(--gold); }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* Generated link section */
+    #linkSection {
+      display: none;
+    }
+
+    .link-box {
+      background: var(--surface2);
+      border: 1px solid var(--gold-dim);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 0.82rem;
+      color: var(--gold-light);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+      word-break: break-all;
+      margin-bottom: 12px;
+    }
+
+    .link-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Step numbers */
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.12);
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 500;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    /* Count badge */
+    .count-badge {
+      display: inline-block;
+      background: rgba(201,168,76,0.12);
+      color: var(--gold-dim);
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <header>
+      <span class="logo-icon">🎁</span>
+      <h1>Gif<span>ters</span></h1>
+      <p class="subtitle">Secret Santa Draw — Admin Setup</p>
+    </header>
+
+    <!-- Step 1: Add Participants -->
+    <div class="section">
+      <div class="section-header">
+        <span class="step-badge">1</span>
+        <span class="section-title">Participants <span class="count-badge" id="countBadge">0</span></span>
+      </div>
+      <p class="section-desc">Add everyone joining the draw. Each person gets a PIN — they'll use it to reveal their match privately.</p>
+
+      <div class="add-form">
+        <div class="field">
+          <label for="nameInput">Name</label>
+          <input type="text" id="nameInput" placeholder="e.g. Jamie" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="pinInput">PIN (4–8 digits)</label>
+          <input type="number" id="pinInput" placeholder="e.g. 1234" min="1000" max="99999999" />
+        </div>
+        <div class="field" style="visibility:hidden">
+          <label>&nbsp;</label>
+          <!-- spacer -->
+        </div>
+        <button class="btn btn-add" onclick="addParticipant()">+ Add</button>
+      </div>
+
+      <div id="participantList" class="participant-list">
+        <div class="empty-state">No participants yet — add your first one above.</div>
+      </div>
+    </div>
+
+    <!-- Step 2: Mark Couples -->
+    <div class="section">
+      <div class="section-header">
+        <span class="step-badge">2</span>
+        <span class="section-title">Couples <span class="count-badge" id="coupleCountBadge">0</span></span>
+      </div>
+      <p class="section-desc">Mark any couples so they won't be assigned to each other.</p>
+
+      <div class="couple-form">
+        <div class="field">
+          <label for="person1Select">Person</label>
+          <select id="person1Select"><option value="">— select —</option></select>
+        </div>
+        <div class="field">
+          <label for="person2Select">Partner</label>
+          <select id="person2Select"><option value="">— select —</option></select>
+        </div>
+        <button class="btn btn-add" onclick="addCouple()">+ Add</button>
+      </div>
+
+      <div id="coupleList" class="couple-list"></div>
+    </div>
+
+    <!-- Step 3: Generate -->
+    <div class="section">
+      <div class="section-header">
+        <span class="step-badge">3</span>
+        <span class="section-title">Generate the Draw</span>
+      </div>
+      <p class="section-desc">Once all participants are added, generate the assignments. The draw is stored locally — share the reveal link with your group.</p>
+
+      <div id="generateAlert" class="alert"></div>
+
+      <button class="btn btn-primary" id="generateBtn" onclick="generateDraw()" disabled>
+        ✦ Generate Secret Santa Draw
+      </button>
+
+      <div id="linkSection">
+        <hr class="divider" />
+        <p class="section-desc" style="margin-bottom:12px;">✓ Draw generated! Share this link with everyone — they'll enter their name and PIN to see their person.</p>
+        <div class="link-box" id="revealLink"></div>
+        <div class="link-actions">
+          <button class="btn btn-outline" onclick="copyLink()">Copy Link</button>
+          <button class="btn btn-danger" onclick="resetDraw()">Reset Draw</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ─── State ───────────────────────────────────────────────────────────────
+    let participants = []; // { id, name, pin }
+    let couples = [];      // [id1, id2]
+
+    // ─── Participants ────────────────────────────────────────────────────────
+    function addParticipant() {
+      const nameEl = document.getElementById('nameInput');
+      const pinEl  = document.getElementById('pinInput');
+      const name   = nameEl.value.trim();
+      const pin    = pinEl.value.trim();
+
+      if (!name) return shake(nameEl);
+      if (!pin || pin.length < 4 || pin.length > 8 || !/^\d+$/.test(pin)) return shake(pinEl);
+
+      if (participants.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+        showAlert('generateAlert', 'error', `"${name}" is already in the list.`);
+        return;
+      }
+
+      participants.push({ id: crypto.randomUUID(), name, pin });
+      nameEl.value = '';
+      pinEl.value  = '';
+      nameEl.focus();
+
+      renderParticipants();
+      renderSelects();
+      updateGenerateBtn();
+      hideAlert('generateAlert');
+    }
+
+    function removeParticipant(id) {
+      participants = participants.filter(p => p.id !== id);
+      couples = couples.filter(c => !c.includes(id));
+      renderParticipants();
+      renderCouples();
+      renderSelects();
+      updateGenerateBtn();
+    }
+
+    function renderParticipants() {
+      const el = document.getElementById('participantList');
+      document.getElementById('countBadge').textContent = participants.length;
+
+      if (!participants.length) {
+        el.innerHTML = '<div class="empty-state">No participants yet — add your first one above.</div>';
+        return;
+      }
+
+      el.innerHTML = participants.map((p, i) => {
+        const partnerCouple = couples.find(c => c.includes(p.id));
+        const partnerId = partnerCouple ? partnerCouple.find(id => id !== p.id) : null;
+        const partner = partnerId ? participants.find(x => x.id === partnerId) : null;
+        return `
+          <div class="participant-item">
+            <span class="p-num">${i + 1}</span>
+            <div class="p-info">
+              <div class="p-name">${escHtml(p.name)}</div>
+              <div class="p-pin">PIN: ${'•'.repeat(p.pin.length)}</div>
+            </div>
+            ${partner ? `<span class="p-couple-badge">♥ ${escHtml(partner.name)}</span>` : '<span></span>'}
+            <button class="btn btn-danger" onclick="removeParticipant('${p.id}')">Remove</button>
+          </div>`;
+      }).join('');
+    }
+
+    // ─── Couples ─────────────────────────────────────────────────────────────
+    function addCouple() {
+      const s1 = document.getElementById('person1Select').value;
+      const s2 = document.getElementById('person2Select').value;
+
+      if (!s1 || !s2) { showAlert('generateAlert', 'error', 'Select two people to mark as a couple.'); return; }
+      if (s1 === s2)   { showAlert('generateAlert', 'error', 'A person cannot be their own partner.'); return; }
+
+      const exists = couples.find(c => (c[0] === s1 && c[1] === s2) || (c[0] === s2 && c[1] === s1));
+      if (exists) { showAlert('generateAlert', 'error', 'This couple is already added.'); return; }
+
+      const alreadyPaired1 = couples.find(c => c.includes(s1));
+      const alreadyPaired2 = couples.find(c => c.includes(s2));
+      if (alreadyPaired1) {
+        const otherName = participants.find(p => p.id === alreadyPaired1.find(id => id !== s1))?.name;
+        showAlert('generateAlert', 'error', `${participants.find(p=>p.id===s1)?.name} is already paired with ${otherName}.`);
+        return;
+      }
+      if (alreadyPaired2) {
+        const otherName = participants.find(p => p.id === alreadyPaired2.find(id => id !== s2))?.name;
+        showAlert('generateAlert', 'error', `${participants.find(p=>p.id===s2)?.name} is already paired with ${otherName}.`);
+        return;
+      }
+
+      couples.push([s1, s2]);
+      document.getElementById('person1Select').value = '';
+      document.getElementById('person2Select').value = '';
+      renderCouples();
+      renderParticipants();
+      hideAlert('generateAlert');
+    }
+
+    function removeCouple(idx) {
+      couples.splice(idx, 1);
+      renderCouples();
+      renderParticipants();
+    }
+
+    function renderCouples() {
+      const el = document.getElementById('coupleList');
+      document.getElementById('coupleCountBadge').textContent = couples.length;
+
+      if (!couples.length) {
+        el.innerHTML = '';
+        return;
+      }
+
+      el.innerHTML = couples.map((c, i) => {
+        const p1 = participants.find(p => p.id === c[0]);
+        const p2 = participants.find(p => p.id === c[1]);
+        if (!p1 || !p2) return '';
+        return `
+          <div class="couple-item">
+            <div class="couple-names">
+              <span>${escHtml(p1.name)}</span>
+              <span class="couple-heart">♥</span>
+              <span>${escHtml(p2.name)}</span>
+            </div>
+            <button class="btn btn-danger" onclick="removeCouple(${i})">Remove</button>
+          </div>`;
+      }).join('');
+    }
+
+    function renderSelects() {
+      const s1 = document.getElementById('person1Select');
+      const s2 = document.getElementById('person2Select');
+      const makeOptions = () => ['<option value="">— select —</option>',
+        ...participants.map(p => `<option value="${p.id}">${escHtml(p.name)}</option>`)
+      ].join('');
+      s1.innerHTML = makeOptions();
+      s2.innerHTML = makeOptions();
+    }
+
+    // ─── Draw Generation ─────────────────────────────────────────────────────
+    function updateGenerateBtn() {
+      document.getElementById('generateBtn').disabled = participants.length < 2;
+    }
+
+    function generateDraw() {
+      hideAlert('generateAlert');
+      const result = shuffleWithExclusions();
+
+      if (!result) {
+        showAlert('generateAlert', 'error',
+          'Could not find a valid draw with the current couple exclusions. Try removing some couple restrictions or adding more participants.');
+        return;
+      }
+
+      // Encrypt each assignment with the giver's PIN
+      // Format: { [giverId]: encryptedRecipientName }
+      const encrypted = {};
+      for (const [giverId, recipientId] of Object.entries(result)) {
+        const giver     = participants.find(p => p.id === giverId);
+        const recipient = participants.find(p => p.id === recipientId);
+        encrypted[giver.name] = simpleEncrypt(recipient.name, giver.pin);
+      }
+
+      // Store participant names (no PINs stored!) and encrypted assignments
+      const drawData = {
+        participants: participants.map(p => p.name),
+        assignments: encrypted,
+        createdAt: Date.now()
+      };
+
+      localStorage.setItem('gifters_draw', JSON.stringify(drawData));
+
+      const revealUrl = `${window.location.origin}/reveal`;
+      document.getElementById('revealLink').textContent = revealUrl;
+      document.getElementById('linkSection').style.display = 'block';
+
+      showAlert('generateAlert', 'success', `✓ Draw generated for ${participants.length} people!`);
+
+      document.getElementById('generateBtn').textContent = '↻ Regenerate Draw';
+    }
+
+    // Secret Santa shuffle with exclusion constraints
+    // Returns { giverId: recipientId } or null if no valid arrangement found
+    function shuffleWithExclusions(maxAttempts = 1000) {
+      const ids = participants.map(p => p.id);
+
+      // Build exclusion map: who cannot gift whom
+      const excluded = {};
+      ids.forEach(id => { excluded[id] = new Set([id]); }); // can't gift yourself
+      couples.forEach(([a, b]) => {
+        excluded[a].add(b);
+        excluded[b].add(a);
+      });
+
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const recipients = [...ids];
+        shuffle(recipients);
+
+        let valid = true;
+        for (let i = 0; i < ids.length; i++) {
+          if (excluded[ids[i]].has(recipients[i])) {
+            valid = false;
+            break;
+          }
+        }
+
+        if (valid) {
+          const result = {};
+          ids.forEach((id, i) => { result[id] = recipients[i]; });
+          return result;
+        }
+      }
+
+      return null; // failed to find valid draw
+    }
+
+    // Fisher-Yates in place
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function resetDraw() {
+      if (!confirm('Reset and clear the current draw? This cannot be undone.')) return;
+      localStorage.removeItem('gifters_draw');
+      document.getElementById('linkSection').style.display = 'none';
+      document.getElementById('generateBtn').textContent = '✦ Generate Secret Santa Draw';
+      hideAlert('generateAlert');
+    }
+
+    function copyLink() {
+      const link = document.getElementById('revealLink').textContent;
+      navigator.clipboard.writeText(link).then(() => {
+        showAlert('generateAlert', 'success', '✓ Link copied to clipboard!');
+        setTimeout(() => hideAlert('generateAlert'), 2500);
+      });
+    }
+
+    // ─── Encryption (XOR cipher keyed on PIN) ───────────────────────────────
+    // Simple but effective for this use case — hides the name from plain sight in storage
+    function simpleEncrypt(text, key) {
+      const keyStr = String(key);
+      let result = '';
+      for (let i = 0; i < text.length; i++) {
+        result += String.fromCharCode(text.charCodeAt(i) ^ keyStr.charCodeAt(i % keyStr.length));
+      }
+      return btoa(result);
+    }
+
+    // ─── Utilities ───────────────────────────────────────────────────────────
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showAlert(id, type, msg) {
+      const el = document.getElementById(id);
+      el.className = `alert alert-${type} show`;
+      el.textContent = msg;
+    }
+
+    function hideAlert(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    function shake(el) {
+      el.style.borderColor = 'var(--red)';
+      el.animate([
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-6px)' },
+        { transform: 'translateX(6px)' },
+        { transform: 'translateX(-4px)' },
+        { transform: 'translateX(0)' }
+      ], { duration: 300 });
+      setTimeout(() => { el.style.borderColor = ''; }, 600);
+    }
+
+    // Allow Enter key on inputs
+    document.getElementById('pinInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addParticipant();
+    });
+    document.getElementById('nameInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('pinInput').focus();
+    });
+
+    // Check if draw already exists
+    window.addEventListener('load', () => {
+      const existing = localStorage.getItem('gifters_draw');
+      if (existing) {
+        const revealUrl = `${window.location.origin}/reveal`;
+        document.getElementById('revealLink').textContent = revealUrl;
+        document.getElementById('linkSection').style.display = 'block';
+        showAlert('generateAlert', 'info', 'A draw already exists. You can regenerate or reset it below.');
+      }
+    });
+  </script>
+</body>
+</html>

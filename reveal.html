@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gifters — Your Secret Match</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --border: #2a2a3a;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-dim: #8a6e2f;
+      --text: #e8e4dc;
+      --text-muted: #7a7888;
+      --text-dim: #4a4858;
+      --red: #c05050;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      padding: 24px;
+    }
+
+    /* Ambient orb */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -20%;
+      left: 30%;
+      width: 500px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(100,80,160,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    /* ─── Login Card ─── */
+    #loginCard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px 40px;
+      text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    }
+
+    @media (max-width: 480px) {
+      #loginCard { padding: 36px 24px 32px; border-radius: 16px; }
+    }
+
+    .logo-icon {
+      font-size: 2.6rem;
+      display: block;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 28px rgba(201,168,76,0.45));
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    h1 span { color: var(--gold); }
+
+    .tagline {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+    }
+
+    .field {
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 300;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+    }
+
+    input::placeholder { color: var(--text-dim); }
+
+    .btn-reveal {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border: none;
+      border-radius: 10px;
+      color: #0d0d0f;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      margin-top: 8px;
+      padding: 14px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-reveal:hover {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(201,168,76,0.3);
+    }
+
+    .btn-reveal:active { transform: translateY(0); }
+
+    .alert {
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      margin-top: 14px;
+      display: none;
+      line-height: 1.5;
+      text-align: left;
+    }
+    .alert.show { display: block; }
+    .alert-error { background: rgba(192,80,80,0.1); border: 1px solid rgba(192,80,80,0.3); color: #e08080; }
+
+    .no-draw-note {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+
+    /* ─── Reveal Card ─── */
+    #revealCard {
+      display: none;
+      text-align: center;
+    }
+
+    .reveal-inner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px 44px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .reveal-inner { padding: 36px 24px 36px; }
+    }
+
+    /* Shimmer line at top */
+    .reveal-inner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .reveal-greeting {
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .reveal-your-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 40px;
+    }
+
+    .gift-icon-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 28px;
+    }
+
+    .gift-icon {
+      font-size: 3.5rem;
+      display: block;
+      filter: drop-shadow(0 0 20px rgba(201,168,76,0.5));
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { filter: drop-shadow(0 0 20px rgba(201,168,76,0.5)); transform: scale(1); }
+      50% { filter: drop-shadow(0 0 36px rgba(201,168,76,0.8)); transform: scale(1.06); }
+    }
+
+    .reveal-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 12px;
+    }
+
+    .recipient-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 8vw, 3.2rem);
+      font-weight: 300;
+      color: var(--gold-light);
+      letter-spacing: 0.02em;
+      margin-bottom: 16px;
+      animation: fadeUp 0.7s ease both;
+      line-height: 1.1;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal-tagline {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      margin-bottom: 40px;
+      line-height: 1.5;
+    }
+
+    /* Confetti particles */
+    .confetti-wrap {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      top: -10px;
+      border-radius: 2px;
+      animation: fall linear forwards;
+      opacity: 0;
+    }
+
+    @keyframes fall {
+      0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+    }
+
+    .btn-done {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      padding: 11px 28px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-done:hover { border-color: var(--text-muted); color: var(--text); }
+
+    /* Decorative dots */
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 28px;
+    }
+
+    .dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      opacity: 0.5;
+    }
+
+    .dot:nth-child(2) { opacity: 0.8; background: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <!-- Confetti container -->
+  <div class="confetti-wrap" id="confetti"></div>
+
+  <div class="container">
+
+    <!-- Login Card -->
+    <div id="loginCard">
+      <span class="logo-icon">🎁</span>
+      <h1>Gif<span>ters</span></h1>
+      <p class="tagline">Secret Santa Reveal</p>
+
+      <div id="noDraw" style="display:none">
+        <p class="no-draw-note">No draw has been created yet. Ask your admin to set one up first.</p>
+      </div>
+
+      <div id="loginForm">
+        <div class="field">
+          <label for="nameInput">Your Name</label>
+          <input type="text" id="nameInput" placeholder="Enter your name" autocomplete="off" autocorrect="off" />
+        </div>
+        <div class="field">
+          <label for="pinInput">Your PIN</label>
+          <input type="password" id="pinInput" placeholder="Enter your PIN" autocomplete="off" inputmode="numeric" />
+        </div>
+        <button class="btn-reveal" onclick="revealAssignment()">✦ Reveal My Match</button>
+        <div id="loginAlert" class="alert alert-error"></div>
+      </div>
+    </div>
+
+    <!-- Reveal Card -->
+    <div id="revealCard">
+      <div class="reveal-inner">
+        <p class="reveal-greeting">Hey there,</p>
+        <p class="reveal-your-name" id="revealYourName"></p>
+
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+        <div class="gift-icon-wrap">
+          <span class="gift-icon">🎁</span>
+        </div>
+
+        <p class="reveal-label">You are gifting</p>
+        <p class="recipient-name" id="recipientName"></p>
+        <p class="reveal-tagline" id="revealTagline">Make it special — they deserve it.</p>
+
+        <button class="btn-done" onclick="hideName()">Close</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ─── On Load ─────────────────────────────────────────────────────────────
+    window.addEventListener('load', () => {
+      const draw = getDrawData();
+      if (!draw) {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('noDraw').style.display = 'block';
+        return;
+      }
+      document.getElementById('nameInput').focus();
+    });
+
+    // ─── Reveal Logic ─────────────────────────────────────────────────────────
+    function revealAssignment() {
+      clearAlert();
+
+      const nameInput = document.getElementById('nameInput').value.trim();
+      const pin       = document.getElementById('pinInput').value.trim();
+
+      if (!nameInput) { showAlert('Please enter your name.'); shake(document.getElementById('nameInput')); return; }
+      if (!pin)       { showAlert('Please enter your PIN.'); shake(document.getElementById('pinInput')); return; }
+
+      const draw = getDrawData();
+      if (!draw) { showAlert('No draw found. Ask your admin to generate one.'); return; }
+
+      // Find matching participant (case-insensitive)
+      const matchedName = draw.participants.find(n => n.toLowerCase() === nameInput.toLowerCase());
+      if (!matchedName) {
+        showAlert('Name not found in the draw. Check your spelling.');
+        return;
+      }
+
+      const encryptedValue = draw.assignments[matchedName];
+      if (!encryptedValue) {
+        showAlert('Something went wrong — no assignment found for you.');
+        return;
+      }
+
+      // Try to decrypt
+      const decrypted = simpleDecrypt(encryptedValue, pin);
+      if (!decrypted || !draw.participants.includes(decrypted)) {
+        showAlert('Incorrect PIN. Please try again.');
+        shake(document.getElementById('pinInput'));
+        document.getElementById('pinInput').value = '';
+        return;
+      }
+
+      // ✓ Show reveal
+      showReveal(matchedName, decrypted);
+    }
+
+    function showReveal(yourName, recipientName) {
+      document.getElementById('loginCard').style.display = 'none';
+
+      document.getElementById('revealYourName').textContent = yourName;
+      document.getElementById('recipientName').textContent  = recipientName;
+      document.getElementById('revealTagline').textContent  = taglineFor(yourName, recipientName);
+
+      const card = document.getElementById('revealCard');
+      card.style.display = 'block';
+      card.style.animation = 'fadeUp 0.6s ease both';
+
+      launchConfetti();
+    }
+
+    function hideName() {
+      // Clear sensitive info then go back
+      document.getElementById('recipientName').textContent = '';
+      document.getElementById('revealCard').style.display  = 'none';
+      document.getElementById('loginCard').style.display   = 'block';
+      document.getElementById('nameInput').value  = '';
+      document.getElementById('pinInput').value   = '';
+      document.getElementById('nameInput').focus();
+      document.getElementById('confetti').innerHTML = '';
+    }
+
+    function taglineFor(giver, recipient) {
+      const lines = [
+        `Make it a moment ${recipient} will always remember.`,
+        `Find something ${recipient} would never find for themselves.`,
+        `${recipient} is lucky to have you as their gifter.`,
+        `A little mystery, a lot of joy — enjoy the search!`,
+        `The best gifts are the ones that show you were paying attention.`,
+      ];
+      return lines[Math.floor(Math.random() * lines.length)];
+    }
+
+    // ─── Decryption ──────────────────────────────────────────────────────────
+    function simpleDecrypt(encoded, key) {
+      try {
+        const raw    = atob(encoded);
+        const keyStr = String(key);
+        let result   = '';
+        for (let i = 0; i < raw.length; i++) {
+          result += String.fromCharCode(raw.charCodeAt(i) ^ keyStr.charCodeAt(i % keyStr.length));
+        }
+        return result;
+      } catch {
+        return null;
+      }
+    }
+
+    // ─── Confetti ────────────────────────────────────────────────────────────
+    const COLORS = ['#c9a84c', '#e8c97a', '#8a6e2f', '#fff0c0', '#f0d080', '#a07830', '#ffffff', '#ffe080'];
+
+    function launchConfetti() {
+      const wrap = document.getElementById('confetti');
+      wrap.innerHTML = '';
+
+      const count = 80;
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'particle';
+
+        const size  = Math.random() * 8 + 4;
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        const left  = Math.random() * 100;
+        const delay = Math.random() * 1.5;
+        const dur   = Math.random() * 2.5 + 2;
+        const isCircle = Math.random() > 0.5;
+
+        el.style.cssText = `
+          width: ${size}px;
+          height: ${isCircle ? size : size * 0.4}px;
+          background: ${color};
+          left: ${left}%;
+          animation-duration: ${dur}s;
+          animation-delay: ${delay}s;
+          border-radius: ${isCircle ? '50%' : '1px'};
+          opacity: 0;
+        `;
+
+        wrap.appendChild(el);
+      }
+
+      // Clear after animation
+      setTimeout(() => { wrap.innerHTML = ''; }, 5000);
+    }
+
+    // ─── Utilities ───────────────────────────────────────────────────────────
+    function getDrawData() {
+      try {
+        const raw = localStorage.getItem('gifters_draw');
+        return raw ? JSON.parse(raw) : null;
+      } catch { return null; }
+    }
+
+    function showAlert(msg) {
+      const el = document.getElementById('loginAlert');
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+
+    function clearAlert() {
+      document.getElementById('loginAlert').classList.remove('show');
+    }
+
+    function shake(el) {
+      el.style.borderColor = 'var(--red)';
+      el.animate([
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-6px)' },
+        { transform: 'translateX(6px)' },
+        { transform: 'translateX(-4px)' },
+        { transform: 'translateX(0)' }
+      ], { duration: 300 });
+      setTimeout(() => { el.style.borderColor = ''; }, 600);
+    }
+
+    // Enter key support
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('pinInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') revealAssignment();
+      });
+      document.getElementById('nameInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('pinInput').focus();
+      });
+    });
+  </script>
+</body>
+</html>
