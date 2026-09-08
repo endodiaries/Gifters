@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gifters — Secret Santa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0f;
+      --surface: #13131a;
+      --surface2: #1a1a24;
+      --border: #2a2a3a;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-dim: #8a6e2f;
+      --text: #e8e4dc;
+      --text-muted: #7a7888;
+      --text-dim: #4a4858;
+      --red: #c05050;
+      --green: #4a9060;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -30%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Shared ──────────────────────────────────────────────── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .logo-icon {
+      font-size: 2.4rem;
+      margin-bottom: 16px;
+      display: block;
+      filter: drop-shadow(0 0 24px rgba(201,168,76,0.4));
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 5vw, 3rem);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    h1 span { color: var(--gold); }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: 0.03em;
+    }
+
+    .section-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.12);
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 500;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .count-badge {
+      display: inline-block;
+      background: rgba(201,168,76,0.12);
+      color: var(--gold-dim);
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="password"],
+    select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 300;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+      -webkit-appearance: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="password"]:focus,
+    select:focus { border-color: var(--gold-dim); }
+
+    input::placeholder { color: var(--text-dim); }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      padding: 10px 18px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-add {
+      background: var(--gold-dim);
+      color: #0d0d0f;
+      align-self: end;
+    }
+    .btn-add:hover { background: var(--gold); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: #0d0d0f;
+      padding: 14px 32px;
+      font-size: 0.88rem;
+      border-radius: 10px;
+      width: 100%;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(201,168,76,0.25);
+    }
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-danger {
+      background: transparent;
+      border: 1px solid #3a2020;
+      color: var(--red);
+      padding: 6px 10px;
+      font-size: 0.75rem;
+    }
+    .btn-danger:hover { background: #2a1010; border-color: var(--red); }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 16px;
+    }
+    .btn-outline:hover { border-color: var(--text-muted); color: var(--text); }
+
+    .add-form {
+      display: grid;
+      grid-template-columns: 1fr 160px auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 540px) {
+      .add-form { grid-template-columns: 1fr 1fr; }
+      .add-form .btn-add { grid-column: 1 / -1; }
+    }
+
+    .participant-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .participant-item {
+      display: grid;
+      grid-template-columns: 32px 1fr auto auto;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .p-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      color: var(--gold-dim);
+      text-align: center;
+    }
+
+    .p-name {
+      font-size: 0.92rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .p-pin {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-family: monospace;
+      letter-spacing: 0.1em;
+    }
+
+    .p-couple-badge {
+      font-size: 0.7rem;
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.25);
+      color: var(--gold-dim);
+      padding: 3px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .couple-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    @media (max-width: 480px) {
+      .couple-form { grid-template-columns: 1fr 1fr; }
+      .couple-form .btn-add { grid-column: 1 / -1; }
+    }
+
+    .couple-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 16px;
+    }
+
+    .couple-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+    }
+
+    .couple-names { display: flex; align-items: center; gap: 10px; }
+    .couple-heart { color: var(--gold-dim); }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+      line-height: 1.5;
+    }
+    .alert.show { display: block; }
+    .alert-error   { background: rgba(192,80,80,0.1);   border: 1px solid rgba(192,80,80,0.3);   color: #e08080; }
+    .alert-success { background: rgba(74,144,96,0.1);   border: 1px solid rgba(74,144,96,0.3);   color: #80c898; }
+    .alert-info    { background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2);  color: var(--gold); }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+    #linkSection { display: none; }
+
+    .link-box {
+      background: var(--surface2);
+      border: 1px solid var(--gold-dim);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 0.82rem;
+      color: var(--gold-light);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+      word-break: break-all;
+      margin-bottom: 12px;
+    }
+
+    .link-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Reveal page ─────────────────────────────────────────── */
+    #pageReveal {
+      min-height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    #pageReveal.active {
+      display: flex;
+    }
+
+    #pageReveal::after {
+      content: '';
+      position: fixed;
+      bottom: -20%;
+      left: 30%;
+      width: 500px; height: 400px;
+      background: radial-gradient(ellipse, rgba(100,80,160,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .reveal-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    #loginCard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px 40px;
+      text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    }
+
+    @media (max-width: 480px) {
+      #loginCard { padding: 36px 24px 32px; border-radius: 16px; }
+    }
+
+    .logo-icon-lg {
+      font-size: 2.6rem;
+      display: block;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 28px rgba(201,168,76,0.45));
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+
+    .login-h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    .login-h1 span { color: var(--gold); }
+
+    .tagline {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+    }
+
+    .login-field {
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .login-field label {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .login-field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 300;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .login-field input:focus {
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+    }
+
+    .login-field input::placeholder { color: var(--text-dim); }
+
+    .btn-reveal {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      border: none;
+      border-radius: 10px;
+      color: #0d0d0f;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      margin-top: 8px;
+      padding: 14px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-reveal:hover {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(201,168,76,0.3);
+    }
+
+    .no-draw-note {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: var(--text-muted); }
+
+    /* Result card */
+    #resultCard {
+      display: none;
+      text-align: center;
+    }
+
+    .result-inner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px 44px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) { .result-inner { padding: 36px 24px 36px; } }
+
+    .result-inner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .reveal-greeting {
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .reveal-your-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 36px;
+    }
+
+    .gift-icon {
+      font-size: 3.5rem;
+      display: block;
+      margin-bottom: 24px;
+      filter: drop-shadow(0 0 20px rgba(201,168,76,0.5));
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { filter: drop-shadow(0 0 20px rgba(201,168,76,0.5)); transform: scale(1); }
+      50%       { filter: drop-shadow(0 0 36px rgba(201,168,76,0.8)); transform: scale(1.06); }
+    }
+
+    .dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 24px; }
+    .dot  { width: 4px; height: 4px; border-radius: 50%; background: var(--gold-dim); opacity: 0.5; }
+    .dot:nth-child(2) { opacity: 0.8; background: var(--gold); }
+
+    .reveal-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 10px;
+    }
+
+    .recipient-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 8vw, 3.2rem);
+      font-weight: 300;
+      color: var(--gold-light);
+      letter-spacing: 0.02em;
+      margin-bottom: 14px;
+      line-height: 1.1;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal-tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      line-height: 1.5;
+    }
+
+    .btn-done {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      padding: 11px 28px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-done:hover { border-color: var(--text-muted); color: var(--text); }
+
+    /* Confetti */
+    .confetti-wrap {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      top: -10px;
+      border-radius: 2px;
+      animation: fall linear forwards;
+      opacity: 0;
+    }
+
+    @keyframes fall {
+      0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <div class="confetti-wrap" id="confetti"></div>
+
+  <!-- ══════════════════════════════════════════════════════
+       PAGE: ADMIN
+  ══════════════════════════════════════════════════════ -->
+  <div id="pageAdmin" class="page">
+    <div class="page-wrap">
+
+      <header>
+        <span class="logo-icon">🎁</span>
+        <h1>Gif<span>ters</span></h1>
+        <p class="subtitle">Secret Santa Draw — Admin Setup</p>
+      </header>
+
+      <!-- Step 1 -->
+      <div class="section">
+        <div class="section-header">
+          <span class="step-badge">1</span>
+          <span class="section-title">Participants <span class="count-badge" id="countBadge">0</span></span>
+        </div>
+        <p class="section-desc" style="margin-top:6px">Add everyone joining the draw. Each person gets a PIN — share it with them privately. They'll use it to reveal their match.</p>
+
+        <div class="add-form">
+          <div class="field">
+            <label for="nameInput">Name</label>
+            <input type="text" id="nameInput" placeholder="e.g. Jamie" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="pinInput">PIN (4–8 digits)</label>
+            <input type="number" id="pinInput" placeholder="e.g. 1234" />
+          </div>
+          <button class="btn btn-add" onclick="addParticipant()">+ Add</button>
+        </div>
+
+        <div id="participantList" class="participant-list">
+          <div class="empty-state">No participants yet — add your first one above.</div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="section">
+        <div class="section-header">
+          <span class="step-badge">2</span>
+          <span class="section-title">Couples <span class="count-badge" id="coupleCountBadge">0</span></span>
+        </div>
+        <p class="section-desc" style="margin-top:6px">Mark any couples so they won't be assigned to each other.</p>
+
+        <div class="couple-form">
+          <div class="field">
+            <label for="person1Select">Person</label>
+            <select id="person1Select"><option value="">— select —</option></select>
+          </div>
+          <div class="field">
+            <label for="person2Select">Partner</label>
+            <select id="person2Select"><option value="">— select —</option></select>
+          </div>
+          <button class="btn btn-add" onclick="addCouple()">+ Add</button>
+        </div>
+
+        <div id="coupleList" class="couple-list"></div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="section">
+        <div class="section-header">
+          <span class="step-badge">3</span>
+          <span class="section-title">Generate the Draw</span>
+        </div>
+        <p class="section-desc" style="margin-top:6px">Once all participants are added, generate the assignments. Then share the reveal link with your group — each person uses their PIN to unlock their match privately.</p>
+
+        <div id="generateAlert" class="alert"></div>
+
+        <button class="btn btn-primary" id="generateBtn" onclick="generateDraw()" disabled>
+          ✦ Generate Secret Santa Draw
+        </button>
+
+        <div id="linkSection">
+          <hr class="divider" />
+          <p class="section-desc" style="margin-bottom:12px;">Draw generated! Share this link — each person enters their name and PIN to see their person.</p>
+          <div class="link-box" id="revealLink"></div>
+          <div class="link-actions">
+            <button class="btn btn-outline" onclick="copyLink()">Copy Link</button>
+            <button class="btn btn-danger" onclick="resetDraw()">Reset Draw</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /pageAdmin -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       PAGE: REVEAL
+  ══════════════════════════════════════════════════════ -->
+  <div id="pageReveal" class="page">
+
+    <div class="reveal-container">
+
+      <!-- Login card -->
+      <div id="loginCard">
+        <span class="logo-icon-lg">🎁</span>
+        <h2 class="login-h1">Gif<span>ters</span></h2>
+        <p class="tagline">Secret Santa Reveal</p>
+
+        <div id="noDraw" style="display:none">
+          <p class="no-draw-note">No draw has been set up yet. Ask your admin to create one first.</p>
+          <a class="back-link" onclick="goTo('admin')">&#8592; Back to setup</a>
+        </div>
+
+        <div id="loginForm">
+          <div class="login-field">
+            <label for="revealName">Your Name</label>
+            <input type="text" id="revealName" placeholder="Enter your name" autocomplete="off" autocorrect="off" />
+          </div>
+          <div class="login-field">
+            <label for="revealPin">Your PIN</label>
+            <input type="password" id="revealPin" placeholder="Enter your PIN" autocomplete="off" inputmode="numeric" />
+          </div>
+          <button class="btn-reveal" onclick="doReveal()">✦ Reveal My Match</button>
+          <div id="loginAlert" class="alert alert-error" style="margin-top:14px;margin-bottom:0"></div>
+          <a class="back-link" onclick="goTo('admin')">&#8592; Back to setup</a>
+        </div>
+      </div>
+
+      <!-- Result card -->
+      <div id="resultCard">
+        <div class="result-inner">
+          <p class="reveal-greeting">Hey there,</p>
+          <p class="reveal-your-name" id="resultYourName"></p>
+
+          <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+          <span class="gift-icon">🎁</span>
+
+          <p class="reveal-label">You are gifting</p>
+          <p class="recipient-name" id="resultRecipient"></p>
+          <p class="reveal-tagline" id="resultTagline"></p>
+
+          <button class="btn-done" onclick="closeReveal()">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /pageReveal -->
+
+
+  <script>
+    // ─────────────────────────────────────────────────────────────────────────
+    // ROUTING  (hash-based: #admin  /  #reveal)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    function goTo(page) {
+      window.location.hash = page;
+    }
+
+    function router() {
+      const hash = window.location.hash.replace('#', '') || 'admin';
+
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+      if (hash === 'reveal') {
+        document.getElementById('pageReveal').classList.add('active');
+        initRevealPage();
+      } else {
+        document.getElementById('pageAdmin').classList.add('active');
+        initAdminPage();
+      }
+    }
+
+    window.addEventListener('hashchange', router);
+    window.addEventListener('load', router);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ADMIN STATE
+    // ─────────────────────────────────────────────────────────────────────────
+    let participants = [];  // { id, name, pin }
+    let couples      = [];  // [id1, id2]
+
+    function initAdminPage() {
+      const existing = localStorage.getItem('gifters_draw');
+      if (existing) {
+        const revealUrl = buildRevealUrl();
+        document.getElementById('revealLink').textContent = revealUrl;
+        document.getElementById('linkSection').style.display = 'block';
+        showAlert('generateAlert', 'info', 'A draw already exists. Regenerate or reset below.');
+      }
+    }
+
+    function buildRevealUrl() {
+      return window.location.href.split('#')[0] + '#reveal';
+    }
+
+    // ─── Participants ─────────────────────────────────────────────────────────
+    function addParticipant() {
+      const nameEl = document.getElementById('nameInput');
+      const pinEl  = document.getElementById('pinInput');
+      const name   = nameEl.value.trim();
+      const pin    = pinEl.value.trim();
+
+      if (!name) { shake(nameEl); return; }
+      if (!pin || pin.length < 4 || pin.length > 8 || !/^\d+$/.test(pin)) { shake(pinEl); return; }
+      if (participants.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+        showAlert('generateAlert', 'error', '"' + name + '" is already in the list.');
+        return;
+      }
+
+      participants.push({ id: crypto.randomUUID(), name, pin });
+      nameEl.value = '';
+      pinEl.value  = '';
+      nameEl.focus();
+      renderParticipants();
+      renderSelects();
+      updateGenerateBtn();
+      hideAlert('generateAlert');
+    }
+
+    function removeParticipant(id) {
+      participants = participants.filter(p => p.id !== id);
+      couples = couples.filter(c => !c.includes(id));
+      renderParticipants();
+      renderCouples();
+      renderSelects();
+      updateGenerateBtn();
+    }
+
+    function renderParticipants() {
+      const el = document.getElementById('participantList');
+      document.getElementById('countBadge').textContent = participants.length;
+
+      if (!participants.length) {
+        el.innerHTML = '<div class="empty-state">No participants yet — add your first one above.</div>';
+        return;
+      }
+
+      el.innerHTML = participants.map((p, i) => {
+        const partnerCouple = couples.find(c => c.includes(p.id));
+        const partnerId = partnerCouple ? partnerCouple.find(id => id !== p.id) : null;
+        const partner   = partnerId ? participants.find(x => x.id === partnerId) : null;
+        return '<div class="participant-item">'
+          + '<span class="p-num">' + (i + 1) + '</span>'
+          + '<div class="p-info">'
+          + '<div class="p-name">' + esc(p.name) + '</div>'
+          + '<div class="p-pin">PIN: ' + '*'.repeat(p.pin.length) + '</div>'
+          + '</div>'
+          + (partner ? '<span class="p-couple-badge">&#9829; ' + esc(partner.name) + '</span>' : '<span></span>')
+          + '<button class="btn btn-danger" onclick="removeParticipant(\'' + p.id + '\')">Remove</button>'
+          + '</div>';
+      }).join('');
+    }
+
+    // ─── Couples ──────────────────────────────────────────────────────────────
+    function addCouple() {
+      const s1 = document.getElementById('person1Select').value;
+      const s2 = document.getElementById('person2Select').value;
+      if (!s1 || !s2) { showAlert('generateAlert', 'error', 'Select two people to mark as a couple.'); return; }
+      if (s1 === s2)   { showAlert('generateAlert', 'error', 'A person cannot be their own partner.'); return; }
+      if (couples.find(c => (c[0]===s1&&c[1]===s2)||(c[0]===s2&&c[1]===s1))) {
+        showAlert('generateAlert', 'error', 'This couple is already added.'); return;
+      }
+      const already1 = couples.find(c => c.includes(s1));
+      const already2 = couples.find(c => c.includes(s2));
+      if (already1) {
+        const other = participants.find(p => p.id === already1.find(id => id !== s1))?.name;
+        showAlert('generateAlert', 'error', participants.find(p=>p.id===s1)?.name + ' is already paired with ' + other + '.'); return;
+      }
+      if (already2) {
+        const other = participants.find(p => p.id === already2.find(id => id !== s2))?.name;
+        showAlert('generateAlert', 'error', participants.find(p=>p.id===s2)?.name + ' is already paired with ' + other + '.'); return;
+      }
+      couples.push([s1, s2]);
+      document.getElementById('person1Select').value = '';
+      document.getElementById('person2Select').value = '';
+      renderCouples();
+      renderParticipants();
+      hideAlert('generateAlert');
+    }
+
+    function removeCouple(idx) {
+      couples.splice(idx, 1);
+      renderCouples();
+      renderParticipants();
+    }
+
+    function renderCouples() {
+      const el = document.getElementById('coupleList');
+      document.getElementById('coupleCountBadge').textContent = couples.length;
+      if (!couples.length) { el.innerHTML = ''; return; }
+      el.innerHTML = couples.map((c, i) => {
+        const p1 = participants.find(p => p.id === c[0]);
+        const p2 = participants.find(p => p.id === c[1]);
+        if (!p1 || !p2) return '';
+        return '<div class="couple-item">'
+          + '<div class="couple-names"><span>' + esc(p1.name) + '</span><span class="couple-heart">&#9829;</span><span>' + esc(p2.name) + '</span></div>'
+          + '<button class="btn btn-danger" onclick="removeCouple(' + i + ')">Remove</button>'
+          + '</div>';
+      }).join('');
+    }
+
+    function renderSelects() {
+      const opts = '<option value="">— select —</option>'
+        + participants.map(p => '<option value="' + p.id + '">' + esc(p.name) + '</option>').join('');
+      document.getElementById('person1Select').innerHTML = opts;
+      document.getElementById('person2Select').innerHTML = opts;
+    }
+
+    // ─── Draw generation ──────────────────────────────────────────────────────
+    function updateGenerateBtn() {
+      document.getElementById('generateBtn').disabled = participants.length < 2;
+    }
+
+    function generateDraw() {
+      hideAlert('generateAlert');
+      const result = shuffleWithExclusions();
+      if (!result) {
+        showAlert('generateAlert', 'error', 'Could not find a valid draw with the current couple exclusions. Try removing some restrictions or adding more participants.');
+        return;
+      }
+
+      const encrypted = {};
+      for (const [giverId, recipientId] of Object.entries(result)) {
+        const giver     = participants.find(p => p.id === giverId);
+        const recipient = participants.find(p => p.id === recipientId);
+        encrypted[giver.name] = encrypt(recipient.name, giver.pin);
+      }
+
+      const drawData = {
+        participants: participants.map(p => p.name),
+        assignments: encrypted,
+        createdAt: Date.now()
+      };
+
+      localStorage.setItem('gifters_draw', JSON.stringify(drawData));
+
+      const url = buildRevealUrl();
+      document.getElementById('revealLink').textContent = url;
+      document.getElementById('linkSection').style.display = 'block';
+      showAlert('generateAlert', 'success', 'Draw generated for ' + participants.length + ' people!');
+      document.getElementById('generateBtn').textContent = 'Regenerate Draw';
+    }
+
+    function shuffleWithExclusions(maxAttempts = 1000) {
+      const ids = participants.map(p => p.id);
+      const excluded = {};
+      ids.forEach(id => { excluded[id] = new Set([id]); });
+      couples.forEach(([a, b]) => { excluded[a].add(b); excluded[b].add(a); });
+
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const recipients = [...ids];
+        fisherYates(recipients);
+        if (ids.every((id, i) => !excluded[id].has(recipients[i]))) {
+          const result = {};
+          ids.forEach((id, i) => { result[id] = recipients[i]; });
+          return result;
+        }
+      }
+      return null;
+    }
+
+    function fisherYates(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function resetDraw() {
+      if (!confirm('Clear the current draw? This cannot be undone.')) return;
+      localStorage.removeItem('gifters_draw');
+      document.getElementById('linkSection').style.display = 'none';
+      document.getElementById('generateBtn').textContent = '✦ Generate Secret Santa Draw';
+      hideAlert('generateAlert');
+    }
+
+    function copyLink() {
+      const link = document.getElementById('revealLink').textContent;
+      navigator.clipboard.writeText(link).then(() => {
+        showAlert('generateAlert', 'success', 'Link copied to clipboard!');
+        setTimeout(() => hideAlert('generateAlert'), 2500);
+      });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // REVEAL PAGE
+    // ─────────────────────────────────────────────────────────────────────────
+    function initRevealPage() {
+      // Reset to login state whenever the reveal page is navigated to
+      document.getElementById('loginCard').style.display  = 'block';
+      document.getElementById('resultCard').style.display = 'none';
+      document.getElementById('revealName').value = '';
+      document.getElementById('revealPin').value  = '';
+      hideRevealAlert();
+
+      const draw = getDrawData();
+      if (!draw) {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('noDraw').style.display    = 'block';
+      } else {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('noDraw').style.display    = 'none';
+        setTimeout(() => document.getElementById('revealName').focus(), 100);
+      }
+    }
+
+    function doReveal() {
+      hideRevealAlert();
+      const nameInput = document.getElementById('revealName').value.trim();
+      const pin       = document.getElementById('revealPin').value.trim();
+
+      if (!nameInput) { shake(document.getElementById('revealName'));  return; }
+      if (!pin)       { shake(document.getElementById('revealPin'));   return; }
+
+      const draw = getDrawData();
+      if (!draw) { showRevealAlert('No draw found. Ask your admin to generate one.'); return; }
+
+      const matchedName = draw.participants.find(n => n.toLowerCase() === nameInput.toLowerCase());
+      if (!matchedName) { showRevealAlert('Name not found in the draw. Check your spelling.'); return; }
+
+      const encryptedValue = draw.assignments[matchedName];
+      if (!encryptedValue) { showRevealAlert('No assignment found for you. Contact the admin.'); return; }
+
+      const decrypted = decrypt(encryptedValue, pin);
+      if (!decrypted || !draw.participants.includes(decrypted)) {
+        showRevealAlert('Incorrect PIN. Please try again.');
+        shake(document.getElementById('revealPin'));
+        document.getElementById('revealPin').value = '';
+        return;
+      }
+
+      showResult(matchedName, decrypted);
+    }
+
+    function showResult(yourName, recipientName) {
+      document.getElementById('loginCard').style.display  = 'none';
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('resultYourName').textContent  = yourName;
+      document.getElementById('resultRecipient').textContent = recipientName;
+      document.getElementById('resultTagline').textContent   = tagline(yourName, recipientName);
+      launchConfetti();
+    }
+
+    function closeReveal() {
+      document.getElementById('resultRecipient').textContent = '';
+      document.getElementById('resultCard').style.display    = 'none';
+      document.getElementById('loginCard').style.display     = 'block';
+      document.getElementById('revealName').value = '';
+      document.getElementById('revealPin').value  = '';
+      document.getElementById('confetti').innerHTML = '';
+    }
+
+    function tagline(giver, recipient) {
+      const lines = [
+        'Make it a moment ' + recipient + ' will always remember.',
+        'Find something ' + recipient + ' would never find for themselves.',
+        recipient + ' is lucky to have you as their gifter.',
+        'A little mystery, a lot of joy — enjoy the hunt!',
+        'The best gifts show you were paying attention.',
+      ];
+      return lines[Math.floor(Math.random() * lines.length)];
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ENCRYPTION  (XOR + base64, keyed on PIN)
+    // ─────────────────────────────────────────────────────────────────────────
+    function encrypt(text, key) {
+      key = String(key);
+      let out = '';
+      for (let i = 0; i < text.length; i++) {
+        out += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+      }
+      return btoa(out);
+    }
+
+    function decrypt(encoded, key) {
+      try {
+        const raw = atob(encoded);
+        key = String(key);
+        let out = '';
+        for (let i = 0; i < raw.length; i++) {
+          out += String.fromCharCode(raw.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        return out;
+      } catch { return null; }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CONFETTI
+    // ─────────────────────────────────────────────────────────────────────────
+    const COLORS = ['#c9a84c','#e8c97a','#8a6e2f','#fff0c0','#f0d080','#a07830','#ffffff','#ffe080'];
+
+    function launchConfetti() {
+      const wrap = document.getElementById('confetti');
+      wrap.innerHTML = '';
+      for (let i = 0; i < 80; i++) {
+        const el    = document.createElement('div');
+        el.className = 'particle';
+        const size   = Math.random() * 8 + 4;
+        const circle = Math.random() > 0.5;
+        el.style.cssText = [
+          'width:' + size + 'px',
+          'height:' + (circle ? size : size * 0.4) + 'px',
+          'background:' + COLORS[Math.floor(Math.random() * COLORS.length)],
+          'left:' + (Math.random() * 100) + '%',
+          'animation-duration:' + (Math.random() * 2.5 + 2) + 's',
+          'animation-delay:' + (Math.random() * 1.5) + 's',
+          'border-radius:' + (circle ? '50%' : '1px'),
+          'opacity:0'
+        ].join(';');
+        wrap.appendChild(el);
+      }
+      setTimeout(() => { wrap.innerHTML = ''; }, 5500);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // UTILITIES
+    // ─────────────────────────────────────────────────────────────────────────
+    function getDrawData() {
+      try { return JSON.parse(localStorage.getItem('gifters_draw')); }
+      catch { return null; }
+    }
+
+    function showAlert(id, type, msg) {
+      const el = document.getElementById(id);
+      el.className = 'alert alert-' + type + ' show';
+      el.textContent = msg;
+    }
+
+    function hideAlert(id) { document.getElementById(id).classList.remove('show'); }
+
+    function showRevealAlert(msg) {
+      const el = document.getElementById('loginAlert');
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+
+    function hideRevealAlert() { document.getElementById('loginAlert').classList.remove('show'); }
+
+    function shake(el) {
+      el.style.borderColor = 'var(--red)';
+      el.animate([
+        {transform:'translateX(0)'},{transform:'translateX(-6px)'},
+        {transform:'translateX(6px)'},{transform:'translateX(-4px)'},
+        {transform:'translateX(0)'}
+      ], {duration:300});
+      setTimeout(() => { el.style.borderColor = ''; }, 600);
+    }
+
+    function esc(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // Enter key support
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('nameInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('pinInput').focus();
+      });
+      document.getElementById('pinInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') addParticipant();
+      });
+      document.getElementById('revealName').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('revealPin').focus();
+      });
+      document.getElementById('revealPin').addEventListener('keydown', e => {
+        if (e.key === 'Enter') doReveal();
+      });
+    });
+  </script>
+</body>
+</html>
